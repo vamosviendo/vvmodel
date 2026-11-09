@@ -79,11 +79,7 @@ class PositionField(PositiveIntegerField):
         self.ultimo_objeto_anterior = self.items_coleccion.last()
 
         if self.objeto._state.adding:
-            # Pre_save se ejecuta dos veces. Una con add=False y otra con add=True.
-            # Aplicar side effects solo una vez. Funciona igual con "if add", excepto
-            # que hace que falle la verificación paranoica antes de asignar el valor
-            # al objeto, así que optamos por "if not add"
-            valor = self._asignar_posicion_nueva(not add)
+            valor = self._asignar_posicion_nueva()
         else:
             valor = self._modificar_posicion_existente()
 
@@ -93,7 +89,7 @@ class PositionField(PositiveIntegerField):
 
         return getattr(self.objeto, self.attname)
 
-    def _asignar_posicion_nueva(self, produce_efectos):
+    def _asignar_posicion_nueva(self):
         valor = getattr(self.objeto, self.attname)
         if valor is None:
             try:
@@ -105,7 +101,7 @@ class PositionField(PositiveIntegerField):
             if valor > ultima_posicion + 1:
                 return ultima_posicion + 1
 
-            if produce_efectos:
+            if self.items_coleccion.filter(**{self.attname: valor}).exists():
                 self._desplazar_otras_posiciones_de_la_coleccion()
         except AttributeError:  # ultimo_objeto_anterior is None. No hay objetos en la colección.
             return 0
