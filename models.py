@@ -9,7 +9,6 @@ from django.db.models import QuerySet, Model
 from . import errors
 from .cleaners import Cleaner
 from .managers import PolymorphManager
-from vvutils.objetos import has_not_none_attr
 
 
 class MiModel(models.Model):
@@ -132,7 +131,7 @@ class MiModel(models.Model):
         return self
 
     def has_not_none_attr(self, atributo: str) -> bool:
-        return has_not_none_attr(self, atributo)
+        return hasattr(self, atributo) and getattr(self, atributo) is not None
 
     def any_field_changed(self) -> bool:
         fields = [f.name for f in self.get_class()._meta.fields]
